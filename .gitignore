@@ -1,13 +1,44 @@
-node_modules
-.DS_Store
-dist
-dist-ssr
-*.local
-count.txt
+# Dependencies
+node_modules/
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+bun.lock
+
+# Environment variables
 .env
-.nitro
-.tanstack
-.wrangler
-.output
-.vinxi
-todos.json
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# Backend
+packages/backend/dist/
+packages/backend/drizzle/
+packages/backend/.env
+
+# Frontend
+packages/frontend/dist/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Misc
+.cache/
+.turbo/
