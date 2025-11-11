@@ -1,99 +1,109 @@
-import { Hono } from 'hono'
-import { cors } from 'hono/cors'
-import { db } from './db/client'
-import { todos } from './db/schema'
-import { eq } from 'drizzle-orm'
+import { Hono } from "hono";
+import { cors } from "hono/cors";
+import { serve } from "@hono/node-server";
+import { db } from "./db/client";
+import { todos } from "./db/schema";
+import { eq } from "drizzle-orm";
 
-const app = new Hono()
+const app = new Hono();
 
 // Enable CORS for frontend
 app.use(
-  '*',
+  "*",
   cors({
-    origin: 'http://localhost:3000',
-    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-    allowHeaders: ['Content-Type'],
+    origin: "http://localhost:3000",
+    allowMethods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    allowHeaders: ["Content-Type"],
   }),
-)
+);
 
 // Health check
-app.get('/health', (c) => {
-  return c.json({ status: 'ok' })
-})
+app.get("/health", (c) => {
+  return c.json({ status: "ok" });
+});
 
 // Get all todos
-app.get('/api/todos', async (c) => {
+app.get("/api/todos", async (c) => {
   try {
-    const allTodos = await db.select().from(todos)
-    return c.json(allTodos)
+    const allTodos = await db.select().from(todos);
+    return c.json(allTodos);
   } catch (error) {
-    console.error('Error fetching todos:', error)
-    return c.json({ error: 'Failed to fetch todos' }, 500)
+    console.error("Error fetching todos:", error);
+    return c.json({ error: "Failed to fetch todos" }, 500);
   }
-})
+});
 
 // Create a new todo
-app.post('/api/todos', async (c) => {
+app.post("/api/todos", async (c) => {
   try {
-    const body = await c.req.json()
-    const { title } = body
+    const body = await c.req.json();
+    const { title } = body;
 
     if (!title) {
-      return c.json({ error: 'Title is required' }, 400)
+      return c.json({ error: "Title is required" }, 400);
     }
 
-    const result = await db.insert(todos).values({ title }).returning()
-    return c.json(result[0], 201)
+    const result = await db.insert(todos).values({ title }).returning();
+    return c.json(result[0], 201);
   } catch (error) {
-    console.error('Error creating todo:', error)
-    return c.json({ error: 'Failed to create todo' }, 500)
+    console.error("Error creating todo:", error);
+    return c.json({ error: "Failed to create todo" }, 500);
   }
-})
+});
 
 // Update a todo
-app.put('/api/todos/:id', async (c) => {
+app.put("/api/todos/:id", async (c) => {
   try {
-    const id = parseInt(c.req.param('id'))
-    const body = await c.req.json()
-    const { title } = body
+    const id = parseInt(c.req.param("id"));
+    const body = await c.req.json();
+    const { title } = body;
 
     if (!title) {
-      return c.json({ error: 'Title is required' }, 400)
+      return c.json({ error: "Title is required" }, 400);
     }
 
     const result = await db
       .update(todos)
       .set({ title })
       .where(eq(todos.id, id))
-      .returning()
+      .returning();
 
     if (result.length === 0) {
-      return c.json({ error: 'Todo not found' }, 404)
+      return c.json({ error: "Todo not found" }, 404);
     }
 
-    return c.json(result[0])
+    return c.json(result[0]);
   } catch (error) {
-    console.error('Error updating todo:', error)
-    return c.json({ error: 'Failed to update todo' }, 500)
+    console.error("Error updating todo:", error);
+    return c.json({ error: "Failed to update todo" }, 500);
   }
-})
+});
 
 // Delete a todo
-app.delete('/api/todos/:id', async (c) => {
+app.delete("/api/todos/:id", async (c) => {
   try {
-    const id = parseInt(c.req.param('id'))
+    const id = parseInt(c.req.param("id"));
 
-    const result = await db.delete(todos).where(eq(todos.id, id)).returning()
+    const result = await db.delete(todos).where(eq(todos.id, id)).returning();
 
     if (result.length === 0) {
-      return c.json({ error: 'Todo not found' }, 404)
+      return c.json({ error: "Todo not found" }, 404);
     }
 
-    return c.json({ success: true })
+    return c.json({ success: true });
   } catch (error) {
-    console.error('Error deleting todo:', error)
-    return c.json({ error: 'Failed to delete todo' }, 500)
+    console.error("Error deleting todo:", error);
+    return c.json({ error: "Failed to delete todo" }, 500);
   }
-})
+});
 
-export default app
+const port = parseInt(process.env.PORT || "8787", 10);
+
+serve({
+  fetch: app.fetch,
+  port,
+});
+
+console.log(`✅ Backend listening on http://localhost:${port}`);
+
+export default app;

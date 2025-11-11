@@ -2,7 +2,8 @@
   "files": [],
   "references": [
     { "path": "./packages/frontend" },
-    { "path": "./packages/backend" }
+    { "path": "./packages/backend" },
+    { "path": "./packages/smart-contracts" }
   ],
   "compilerOptions": {
     "composite": true,

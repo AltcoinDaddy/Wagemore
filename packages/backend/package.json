@@ -3,8 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "hono dev",
-    "build": "hono build",
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
     "start": "node ./dist/index.js",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
@@ -13,6 +13,7 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@hono/node-server": "^1.13.1",
     "drizzle-orm": "^0.39.0",
     "hono": "^4.10.5",
     "pg": "^8.11.0"

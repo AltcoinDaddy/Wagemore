@@ -2,21 +2,23 @@
   "name": "wagermore",
   "private": true,
   "type": "module",
-  "description": "Wagermore - A modern monorepo with React frontend and Hono backend",
+  "description": "Wagermore - A modern monorepo with React frontend, Hono backend, and Hardhat smart contracts",
   "workspaces": [
     "packages/frontend",
-    "packages/backend"
+    "packages/backend",
+    "packages/smart-contracts"
   ],
   "scripts": {
     "dev": "concurrently \"pnpm run dev:frontend\" \"pnpm run dev:backend\"",
     "dev:frontend": "pnpm --filter @wagermore/frontend dev",
     "dev:backend": "pnpm --filter @wagermore/backend dev",
-    "build": "pnpm run build:frontend && pnpm run build:backend",
+    "build": "pnpm run build:frontend && pnpm run build:backend && pnpm run build:contracts",
     "build:frontend": "pnpm --filter @wagermore/frontend build",
     "build:backend": "pnpm --filter @wagermore/backend build",
+    "build:contracts": "pnpm --filter @wagermore/contracts build",
     "start:backend": "pnpm --filter @wagermore/backend start",
     "preview": "pnpm --filter @wagermore/frontend serve",
-    "test": "pnpm --filter @wagermore/frontend test",
+    "test:frontend": "pnpm --filter @wagermore/frontend test",
     "lint": "pnpm --filter @wagermore/frontend lint",
     "format": "pnpm --filter @wagermore/frontend format",
     "check": "pnpm --filter @wagermore/frontend check",
@@ -32,5 +34,8 @@
   "engines": {
     "node": ">=18.0.0",
     "pnpm": ">=8.0.0"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.6"
   }
 }
