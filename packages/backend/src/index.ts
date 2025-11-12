@@ -97,7 +97,7 @@ app.delete("/api/todos/:id", async (c) => {
   }
 });
 
-const port = parseInt(process.env.PORT || "8787", 10);
+const port = 3001;
 
 serve({
   fetch: app.fetch,
