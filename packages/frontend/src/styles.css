@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Momo+Trust+Display&family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
+
 @import 'tailwindcss';
 
 @import 'tw-animate-css';
@@ -6,9 +8,7 @@
 
 body {
   @apply m-0;
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
-    'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  font-family: 'Nunito', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -128,11 +128,15 @@ code {
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+@theme {
+  --font-mono-display: 'Momo Trust Display', sans-serif;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-gradient-to-r from-[#0A0C14] via-[#1A1F2C] to-[#0A0C14] text-white;
   }
 }
