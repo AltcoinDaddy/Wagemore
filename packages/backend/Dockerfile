@@ -2,21 +2,18 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+# Install pnpm
 RUN npm install -g pnpm
 
-# Copy all root files
-COPY package.json pnpm-workspace.yaml pnpm-lock.yaml tsconfig.base.json ./
-
-# Copy backend package
-COPY packages/backend ./packages/backend
-
-# Install dependencies
+# Copy package.json and install dependencies
+COPY package.json ./
 RUN pnpm install --frozen-lockfile
 
-# Build backend
-RUN pnpm --filter @wagermore/backend build
+# Copy source code
+COPY . .
 
-WORKDIR /app/packages/backend
+# Build the application
+RUN pnpm build
 
 EXPOSE 3001
 

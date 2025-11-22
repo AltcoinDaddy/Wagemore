@@ -26,6 +26,7 @@ build/
 # Backend
 packages/backend/dist/
 packages/backend/drizzle/
+packages/backend/node_modules
 packages/backend/.env
 
 # Frontend

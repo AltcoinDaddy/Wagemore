@@ -4,7 +4,19 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@/db/*": ["./src/db/*"]
+      "@/config": ["./src/config.ts"],
+      "@/db": ["./src/db/index.ts"],
+      "@/db/*": ["./src/db/*"],
+      "@/schema": ["./src/db/schema/index.ts"],
+      "@/schema/*": ["./src/db/schema/*"],
+      "@/features/*": ["./src/features/*"],
+      "@/auth/*": ["./src/features/auth/*"],
+      "@/types": ["./src/types/index.ts"],
+      "@/types/*": ["./src/types/*"],
+      "@/utils": ["./src/utils/index.ts"],
+      "@/utils/*": ["./src/utils/*"],
+      "@/middleware/*": ["./src/middleware/*"],
+      "@/views/*": ["./src/views/*"]
     },
     "outDir": "./dist",
     "rootDir": "./src",

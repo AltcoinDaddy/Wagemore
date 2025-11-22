@@ -3,19 +3,11 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 import { ErrorResponse } from "./types";
+import authRouter from "./features/auth/auth.routes";
 
 const app = new Hono();
 
-// Enable CORS for frontend
-app.use(
-  "*",
-  cors({
-    origin: (origin) => origin || "*", // Allow all origins in development
-    credentials: true,
-    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowHeaders: ["Content-Type", "Authorization", "Cookie"],
-  }),
-);
+app.basePath("/api").route("/auth", authRouter);
 
 // Health check
 app.get("/health", (c) => {

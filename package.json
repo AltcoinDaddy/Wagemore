@@ -34,9 +34,5 @@
   "engines": {
     "node": ">=18.0.0",
     "pnpm": ">=8.0.0"
-  },
-  "dependencies": {
-    "@hono/node-server": "^1.19.6",
-    "postgres": "^3.4.7"
   }
 }
