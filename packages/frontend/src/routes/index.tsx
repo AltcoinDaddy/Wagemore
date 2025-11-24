@@ -1,13 +1,14 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { Header } from '@/components/shared/header'
 
 export const Route = createFileRoute('/')({
-  component: Index,
+  component: RootPage,
 })
 
-function Index() {
+function RootPage() {
   return (
     <div className="flex flex-col min-h-screen">
-      <h2 className="text-2xl font-bold font-mono-display p-4">WageMore</h2>
+      <Header />
     </div>
   )
 }

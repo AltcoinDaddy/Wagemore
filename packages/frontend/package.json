@@ -6,6 +6,9 @@
     "dev": "vite dev --port 3000",
     "build": "vite build",
     "serve": "vite preview",
+    "wagmi:generate": "wagmi generate",
+    "wagmi:watch": "wagmi generate --watch",
+    "contracts:sync": "pnpm wagmi:generate && echo 'Contracts synced!'",
     "test": "vitest run",
     "lint": "eslint",
     "format": "prettier"
@@ -49,6 +52,8 @@
     "@tanstack/react-store": "^0.7.0",
     "@tanstack/router-plugin": "^1.132.0",
     "@tanstack/store": "^0.7.0",
+    "@wagmi/cli": "^2.8.0",
+    "@wagmi/connectors": "^7.0.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
@@ -67,7 +72,9 @@
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.0.6",
     "vaul": "^1.1.2",
+    "viem": "^2.40.0",
     "vite-tsconfig-paths": "^5.1.4",
+    "wagmi": "^3.0.1",
     "zod": "^4.1.12"
   },
   "devDependencies": {

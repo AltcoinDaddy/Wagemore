@@ -130,6 +130,9 @@ code {
 
 @theme {
   --font-mono-display: 'Momo Trust Display', sans-serif;
+
+  /* COLORS */
+  --color-primary-100: #9b87f5;
 }
 
 @layer base {
