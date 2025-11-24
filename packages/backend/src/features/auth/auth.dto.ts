@@ -66,7 +66,7 @@ export const resetPasswordSchema = z.object({
     .string()
     .min(6, "OTP must be 6 characters")
     .max(6, "OTP must be 6 characters"),
-  newPassword: z.string().min(8, "Password must be at least 8 characters"),
+  new_password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
 export type LoginDto = z.infer<typeof loginSchema>;

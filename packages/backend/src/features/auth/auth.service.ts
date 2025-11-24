@@ -464,7 +464,7 @@ class AuthService {
       }
 
       // Hash new password
-      const hashedPassword = await bcrypt.hash(data.newPassword, 12);
+      const hashedPassword = await bcrypt.hash(data.new_password, 12);
 
       // Update user password
       await db
