@@ -12,6 +12,7 @@
     "src/**/*",
     "prettier.config.js",
     "eslint.config.js",
+    "wagmi.config.ts",
     "vite.config.ts"
   ]
 }
