@@ -11,9 +11,13 @@ import {
 } from "./auth.dto";
 import { authController } from "./auth.controller";
 import { authMiddleware } from "./auth.middleware";
+import walletAuthRouter from "./wallet-auth.routes";
 import type { SuccessResponse } from "../../types";
 
 const authRouter = new Hono()
+  // Wallet authentication routes
+  .route("/wallet", walletAuthRouter)
+
   // Public routes with validation
   .post(
     "/register",

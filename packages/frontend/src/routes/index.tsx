@@ -1,14 +1,18 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { Header } from '@/components/shared/header'
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { ArrowRight, Zap, Shield, Trophy, TrendingUp } from 'lucide-react'
 
 export const Route = createFileRoute('/')({
-  component: RootPage,
+  component: HomePage,
 })
 
-function RootPage() {
-  return (
-    <div className="flex flex-col min-h-screen">
-      <Header />
-    </div>
-  )
+function HomePage() {
+  return <div className="flex-1"></div>
 }

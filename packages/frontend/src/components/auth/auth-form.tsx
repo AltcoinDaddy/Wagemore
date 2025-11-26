@@ -1,7 +1,7 @@
 'use client'
 
 import { Link } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from '@tanstack/react-form'
 import { Eye, EyeOff } from 'lucide-react'
 
@@ -10,13 +10,22 @@ import { Input } from '@/components/ui/input'
 import { Field, FieldLabel, FieldError } from '@/components/ui/field'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { signUpSchema, signInSchema } from '@/lib/validations/auth'
+import { useSignUp, useSignIn } from '@/hooks/use-auth'
 
 interface AuthFormProps {
   defaultTab?: 'signup' | 'signin'
 }
 
 export function AuthForm({ defaultTab = 'signup' }: AuthFormProps) {
+  const [currentTab, setCurrentTab] = useState(defaultTab)
   const [showPassword, setShowPassword] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const signUpMutation = useSignUp()
+  const signInMutation = useSignIn()
+  // Update currentTab when defaultTab prop changes
+  useEffect(() => {
+    setCurrentTab(defaultTab)
+  }, [defaultTab])
 
   const signUpForm = useForm({
     defaultValues: {
@@ -25,7 +34,12 @@ export function AuthForm({ defaultTab = 'signup' }: AuthFormProps) {
       password: '',
     },
     onSubmit: async ({ value }) => {
-      console.log('Sign up:', value)
+      setError(null)
+      signUpMutation.mutate(value, {
+        onError: (error) => {
+          setError(error.message || 'Failed to create account')
+        },
+      })
     },
   })
 
@@ -35,25 +49,40 @@ export function AuthForm({ defaultTab = 'signup' }: AuthFormProps) {
       password: '',
     },
     onSubmit: async ({ value }) => {
-      console.log('Sign in:', value)
+      setError(null)
+      signInMutation.mutate(value, {
+        onError: (error) => {
+          setError(error.message || 'Failed to sign in')
+        },
+      })
     },
   })
+
+  const handleTabChange = (value: string) => {
+    const tabValue = value as 'signup' | 'signin'
+    setCurrentTab(tabValue)
+    setError(null) // Clear any existing errors when switching tabs
+  }
 
   return (
     <div className="w-full max-w-md mx-auto">
       {/* Header */}
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-white mb-2">
-          {defaultTab === 'signup' ? 'Create Your Account' : 'Welcome Back'}
+          {currentTab === 'signup' ? 'Create Your Account' : 'Welcome Back'}
         </h1>
         <p className="text-slate-400">
-          {defaultTab === 'signup'
+          {currentTab === 'signup'
             ? 'Join WageMore and start wagering'
             : 'Sign in to your account'}
         </p>
       </div>
 
-      <Tabs defaultValue={defaultTab} className="w-full">
+      <Tabs
+        value={currentTab}
+        onValueChange={handleTabChange}
+        className="w-full"
+      >
         {/* Tab Navigation */}
         <TabsList className="grid grid-cols-2 mb-6 bg-slate-700/50 w-full">
           <TabsTrigger
@@ -69,6 +98,13 @@ export function AuthForm({ defaultTab = 'signup' }: AuthFormProps) {
             Sign In
           </TabsTrigger>
         </TabsList>
+
+        {/* Error Message */}
+        {error && (
+          <div className="mb-4 p-3 rounded-md bg-red-500/10 border border-red-500/20">
+            <p className="text-red-400 text-sm">{error}</p>
+          </div>
+        )}
 
         {/* Sign Up Tab Content */}
         <TabsContent value="signup">
@@ -168,10 +204,12 @@ export function AuthForm({ defaultTab = 'signup' }: AuthFormProps) {
               {([canSubmit, isSubmitting]) => (
                 <Button
                   type="submit"
-                  disabled={!canSubmit}
+                  disabled={!canSubmit || signUpMutation.isPending}
                   className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-3"
                 >
-                  {isSubmitting ? 'Creating Account...' : 'Create Account'}
+                  {isSubmitting || signUpMutation.isPending
+                    ? 'Creating Account...'
+                    : 'Create Account'}
                 </Button>
               )}
             </signUpForm.Subscribe>
@@ -285,10 +323,12 @@ export function AuthForm({ defaultTab = 'signup' }: AuthFormProps) {
               {([canSubmit, isSubmitting]) => (
                 <Button
                   type="submit"
-                  disabled={!canSubmit}
+                  disabled={!canSubmit || signInMutation.isPending}
                   className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-3"
                 >
-                  {isSubmitting ? 'Signing In...' : 'Sign In'}
+                  {isSubmitting || signInMutation.isPending
+                    ? 'Signing In...'
+                    : 'Sign In'}
                 </Button>
               )}
             </signInForm.Subscribe>

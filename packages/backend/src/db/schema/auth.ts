@@ -13,6 +13,8 @@ export const user = pgTable("user", {
     .$onUpdate(() => new Date())
     .notNull(),
   username: text("username").notNull().unique(),
+  // Add wallet address field
+  walletAddress: text("wallet_address").unique(),
 });
 
 export const account = pgTable("account", {
@@ -49,6 +51,16 @@ export const otp = pgTable("otp", {
   email: text("email").notNull(),
   code: text("code").notNull(),
   type: text("type").notNull(), // 'email_verification' or 'password_reset'
+  expiresAt: timestamp("expires_at").notNull(),
+  used: boolean("used").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// New table for wallet authentication nonces
+export const walletNonce = pgTable("wallet_nonce", {
+  id: text("id").primaryKey(),
+  walletAddress: text("wallet_address").notNull(),
+  nonce: text("nonce").notNull(),
   expiresAt: timestamp("expires_at").notNull(),
   used: boolean("used").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
