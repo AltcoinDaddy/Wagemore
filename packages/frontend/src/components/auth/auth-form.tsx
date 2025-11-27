@@ -16,7 +16,6 @@ import { Spinner } from '../ui/spinner'
 interface AuthFormProps {
   defaultTab?: 'signup' | 'signin'
 }
-
 export function AuthForm({ defaultTab = 'signup' }: AuthFormProps) {
   const navigate = useNavigate()
   const [currentTab, setCurrentTab] = useState(defaultTab)
@@ -212,7 +211,8 @@ export function AuthForm({ defaultTab = 'signup' }: AuthFormProps) {
                 >
                   {isSubmitting || signUpMutation.isPending ? (
                     <>
-                      <Spinner className="w-5 h-5 mx-auto" />
+                      <Spinner className="w-5 h-5 mr-2" />
+                      Creating Account...
                     </>
                   ) : (
                     'Create Account'
@@ -335,7 +335,8 @@ export function AuthForm({ defaultTab = 'signup' }: AuthFormProps) {
                 >
                   {isSubmitting || signInMutation.isPending ? (
                     <>
-                      <Spinner className="w-5 h-5" /> 'Signing In'
+                      <Spinner className="w-5 h-5 mr-2" />
+                      Signing In...
                     </>
                   ) : (
                     'Sign In'

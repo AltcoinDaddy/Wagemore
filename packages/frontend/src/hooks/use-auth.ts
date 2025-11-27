@@ -38,8 +38,13 @@ export type AuthUser = {
 }
 
 // Auth Query Hook
-export function useCurrentUser() {
-  return useQuery({
+export function useAuth() {
+  const {
+    data: user,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: queryKeys.auth.user(),
     queryFn: async (): Promise<AuthUser | null> => {
       // Since your backend uses session-based auth, get user from storage
@@ -52,10 +57,6 @@ export function useCurrentUser() {
       return authStorage.getUser()
     },
   })
-}
-
-export function useAuth() {
-  const { data: user, isLoading, error, refetch } = useCurrentUser()
 
   return {
     user,
@@ -72,26 +73,33 @@ export function useSignUp() {
   const navigate = useNavigate()
 
   return useMutation({
-    mutationFn: async (data: SignUpData): Promise<AuthResponse> => {
+    mutationFn: async (
+      data: SignUpData,
+    ): Promise<AuthResponse & { redirectUrl?: string }> => {
       return await authApi.signUp(data)
     },
     onSuccess: (response) => {
-      // Store auth session
-      authStorage.setSession({
-        user: response.user,
-        accessToken: response.accessToken,
-        refreshToken: response.refreshToken,
-        expiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
-      })
+      if (response.redirectUrl) {
+        navigate({ to: response.redirectUrl })
+        toast.success('Account created! Please verify your email.')
+      } else {
+        // Store auth session
+        authStorage.setSession({
+          user: response.user,
+          accessToken: response.accessToken,
+          refreshToken: response.refreshToken,
+          expiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
+        })
 
-      // Update query cache
-      queryClient.setQueryData(queryKeys.auth.user(), response.user)
+        // Update query cache
+        queryClient.setQueryData(queryKeys.auth.user(), response.user)
 
-      // Show success toast
-      toast.success('Account created successfully! Welcome to WageMore!')
+        // Show success toast
+        toast.success('Account created successfully! Welcome to WageMore!')
 
-      // Navigate to dashboard
-      navigate({ to: '/dashboard' })
+        // Navigate to dashboard
+        navigate({ to: '/dashboard' })
+      }
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to create account')
@@ -187,6 +195,7 @@ export function useLogout() {
 // Verify Email Mutation
 export function useVerifyEmail() {
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
 
   return useMutation({
     mutationFn: async (data: { email: string; otp: string }) => {
@@ -204,6 +213,7 @@ export function useVerifyEmail() {
       }
 
       toast.success('Email verified successfully!')
+      navigate({ to: '/dashboard' })
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to verify email')
@@ -285,58 +295,3 @@ export function useUpdateProfile() {
 }
 
 // Utility hooks
-export function useRequireAuth() {
-  const { isAuthenticated, isLoading, user } = useAuth()
-  const navigate = useNavigate()
-
-  if (!isLoading && !isAuthenticated) {
-    navigate({ to: '/auth/sign-in' })
-    return null
-  }
-
-  return user
-}
-
-export function useRedirectIfAuthenticated() {
-  const { isAuthenticated, isLoading } = useAuth()
-  const navigate = useNavigate()
-
-  if (!isLoading && isAuthenticated) {
-    navigate({ to: '/dashboard' })
-  }
-
-  return { isAuthenticated, isLoading }
-}
-
-export function useInvalidateAuth() {
-  const queryClient = useQueryClient()
-
-  return {
-    invalidateUser: () =>
-      queryClient.invalidateQueries({ queryKey: queryKeys.auth.user() }),
-    invalidateAll: () =>
-      queryClient.invalidateQueries({ queryKey: queryKeys.auth.all }),
-  }
-}
-
-export function useAuthErrorHandler() {
-  const queryClient = useQueryClient()
-  const navigate = useNavigate()
-
-  return {
-    handleAuthError: (error: Error) => {
-      if (
-        error.message.includes('401') ||
-        error.message.includes('unauthorized')
-      ) {
-        // Clear auth data and redirect to login
-        authStorage.clearSession()
-        queryClient.setQueryData(queryKeys.auth.user(), null)
-        toast.error('Your session has expired. Please sign in again.')
-        navigate({ to: '/auth/sign-in' })
-      } else {
-        toast.error(error.message || 'An error occurred')
-      }
-    },
-  }
-}

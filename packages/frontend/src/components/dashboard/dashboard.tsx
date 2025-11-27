@@ -63,6 +63,7 @@ export function Dashboard() {
           <CardHeader className="pb-4">
             <CardTitle className="text-white flex items-center gap-3">
               <Avatar className="w-12 h-12">
+                <img src={user.image || ''} alt={user.name || 'User Avatar'} />
                 <AvatarFallback className="bg-cyan-500 text-white">
                   {initials}
                 </AvatarFallback>

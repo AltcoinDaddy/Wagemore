@@ -10,7 +10,9 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:pull": "drizzle-kit pull",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "db:drop": "docker compose down -v",
+    "db:start": "docker compose up -d"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.1",

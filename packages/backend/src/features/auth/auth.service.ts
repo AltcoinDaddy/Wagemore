@@ -30,7 +30,6 @@ class AuthService {
   async register(data: RegisterDto): Promise<AuthResponse> {
     try {
       // OPTIMIZATION: Run Hashing and DB Checks in PARALLEL
-      // We don't wait for one to finish before starting the other.
       const [hashedPassword, existingUsers] = await Promise.all([
         bcrypt.hash(data.password, this.SALT_ROUNDS),
         db
@@ -42,7 +41,6 @@ class AuthService {
           .limit(1),
       ]);
 
-      // Check results from the parallel DB query
       if (existingUsers.length > 0) {
         const found = existingUsers[0];
         if (found.email === data.email)
@@ -51,12 +49,10 @@ class AuthService {
           throw new Error("Username is already taken");
       }
 
-      const avatarUrl = `https://api.multiavatar.com/${encodeURIComponent(data.username)}.svg`;
+      const avatarUrl = `https://api.dicebear.com/9.x/pixel-art/svg?seed=${encodeURIComponent(data.username)}&scale=90&radius=50`;
       const userId = crypto.randomUUID();
 
-      // OPTIMIZATION: Use a Transaction.
-      // This ensures User + Session are created in one network round-trip context
-      // and guarantees data integrity.
+      // OPTIMIZATION: Transaction for User + Session integrity
       const { newUser, tokens } = await db.transaction(async (tx) => {
         // 1. Create User
         const [insertedUser] = await tx
@@ -70,9 +66,9 @@ class AuthService {
             image: avatarUrl,
             emailVerified: false,
           })
-          .returning(); // Drizzle usually returns all fields by default on returning()
+          .returning();
 
-        // 2. Generate Tokens (CPU bound, fast)
+        // 2. Generate Tokens (Sync)
         const tokens = this.generateTokensSync({
           id: insertedUser.id,
           email: insertedUser.email,
@@ -90,8 +86,7 @@ class AuthService {
         return { newUser: insertedUser, tokens };
       });
 
-      // OPTIMIZATION: Fire and Forget.
-      // Do NOT await this. Let it run in the background.
+      // OPTIMIZATION: Fire and Forget Email
       this.sendEmailVerification(data.email).catch((err) =>
         console.error("Background Email Error:", err),
       );
@@ -131,8 +126,7 @@ class AuthService {
       );
       if (!isValidPassword) throw new Error("Invalid email or password");
 
-      // 3. Generate Tokens & Save Session in Parallel
-      // We calculate tokens first (sync), then save to DB
+      // 3. Generate Tokens & Save Session
       const tokens = this.generateTokensSync({
         id: foundUser.id,
         email: foundUser.email,
@@ -160,6 +154,72 @@ class AuthService {
     } catch (error) {
       if (error instanceof Error) throw error;
       throw new Error("Login failed");
+    }
+  }
+
+  /**
+   * NEW METHOD: Handles Token Rotation and Session Renewal
+   */
+  async refreshToken(incomingRefreshToken: string): Promise<AuthResponse> {
+    try {
+      // 1. Verify token signature
+      const payload = this.verifyToken(incomingRefreshToken);
+
+      // 2. Check DB for valid session
+      const [sessionRecord] = await db
+        .select()
+        .from(session)
+        .where(
+          and(
+            eq(session.token, incomingRefreshToken),
+            eq(session.userId, payload.userId),
+          ),
+        )
+        .limit(1);
+
+      if (!sessionRecord) throw new Error("Invalid refresh token");
+
+      // 3. Check Expiration
+      if (new Date() > sessionRecord.expiresAt) {
+        await db.delete(session).where(eq(session.id, sessionRecord.id));
+        throw new Error("Session expired. Please login again");
+      }
+
+      // 4. Get User
+      const userProfile = await this.getUserById(payload.userId);
+      if (!userProfile) throw new Error("User no longer exists");
+
+      // 5. Token Rotation (Generate NEW tokens)
+      const newTokens = this.generateTokensSync({
+        id: userProfile.id,
+        email: userProfile.email,
+        username: userProfile.username,
+      });
+
+      // 6. Update Session in DB
+      await db
+        .update(session)
+        .set({
+          token: newTokens.refreshToken,
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Extend 7 days
+        })
+        .where(eq(session.id, sessionRecord.id));
+
+      return {
+        user: userProfile,
+        ...newTokens,
+      };
+    } catch (error) {
+      throw new Error("Invalid session");
+    }
+  }
+
+  async logout(refreshToken: string): Promise<void> {
+    if (!refreshToken) return;
+    try {
+      await db.delete(session).where(eq(session.token, refreshToken));
+    } catch (e) {
+      console.error("Logout cleanup failed", e);
     }
   }
 
@@ -202,7 +262,7 @@ class AuthService {
         );
       }
 
-      // OPTIMIZATION: If password update, hash in parallel with DB checks
+      // Hash password if needed
       let passwordPromise = Promise.resolve(currentUser.password);
       if (data.newPassword && data.currentPassword) {
         checks.push(
@@ -215,15 +275,11 @@ class AuthService {
         passwordPromise = bcrypt.hash(data.newPassword, this.SALT_ROUNDS);
       }
 
-      // Wait for all validation checks and hashing to finish
       await Promise.all(checks);
       const newPassword = await passwordPromise;
 
-      // Update Logic
-      let imageUrl = currentUser.image;
-      if (data.username && data.username !== currentUser.username) {
-        imageUrl = `https://api.multiavatar.com/${encodeURIComponent(data.username)}.svg`;
-      }
+      // FIX: Do not generate external Avatar URL on update
+      // We rely on Frontend local generation or custom uploads
 
       const [updatedUser] = await db
         .update(user)
@@ -232,7 +288,6 @@ class AuthService {
           email: data.email ?? currentUser.email,
           username: data.username ?? currentUser.username,
           password: newPassword,
-          image: imageUrl,
           updatedAt: new Date(),
         })
         .where(eq(user.id, userId))
@@ -245,15 +300,6 @@ class AuthService {
     } catch (error) {
       if (error instanceof Error) throw error;
       throw new Error("Failed to update profile");
-    }
-  }
-
-  async logout(refreshToken: string): Promise<void> {
-    if (!refreshToken) return;
-    try {
-      await db.delete(session).where(eq(session.token, refreshToken));
-    } catch (e) {
-      console.error("Logout cleanup failed", e);
     }
   }
 
@@ -275,9 +321,6 @@ class AuthService {
     }
   }
 
-  // OPTIMIZATION: Synchronous Token Generation
-  // Removed async/await because jwt.sign is synchronous in this usage.
-  // Also removed the DB call from here to allow Transaction batching in register/login methods.
   private generateTokensSync(userData: {
     id: string;
     email: string;
@@ -300,8 +343,6 @@ class AuthService {
   }
 
   async sendEmailVerification(email: string): Promise<void> {
-    // Note: The controller calling this should NOT await it if they want speed.
-    // Logic inside remains the same, but we optimize the lookup.
     const [foundUser] = await db
       .select({
         name: user.name,
@@ -337,25 +378,21 @@ class AuthService {
   }
 
   async forgotPassword(data: ForgotPasswordDto): Promise<void> {
-    // Fire and forget logic is applied in the controller, or we can make this fast:
     const [foundUser] = await db
       .select({ name: user.name })
       .from(user)
       .where(eq(user.email, data.email))
       .limit(1);
-    if (!foundUser) return; // Silent fail for security
+    if (!foundUser) return;
 
     const otpCode = await otpService.generateOTP(data.email, "password_reset");
 
-    // Fire and forget email
     emailService
       .sendPasswordResetEmail(data.email, foundUser.name, otpCode)
       .catch((e) => console.error(e));
   }
 
   async resetPassword(data: ResetPasswordDto): Promise<void> {
-    // OPTIMIZATION: Parallel execution of OTP check and Hashing
-    // We optimistically hash the password while waiting for OTP verification (DB call)
     const [isValidOTP, hashedPassword] = await Promise.all([
       otpService.verifyOTP(data.email, data.otp, "password_reset"),
       bcrypt.hash(data.new_password, this.SALT_ROUNDS),
@@ -363,9 +400,6 @@ class AuthService {
 
     if (!isValidOTP) throw new Error("Invalid or expired reset code");
 
-    // Execute DB updates
-    // We can run the Password Update and the Session invalidation in parallel
-    // or use a transaction. Parallel is fine here.
     const [foundUser] = await db
       .select({ id: user.id })
       .from(user)
