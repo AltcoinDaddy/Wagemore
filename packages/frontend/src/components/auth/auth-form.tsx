@@ -1,6 +1,6 @@
 'use client'
 
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
 import { useForm } from '@tanstack/react-form'
 import { Eye, EyeOff } from 'lucide-react'
@@ -11,21 +11,20 @@ import { Field, FieldLabel, FieldError } from '@/components/ui/field'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { signUpSchema, signInSchema } from '@/lib/validations/auth'
 import { useSignUp, useSignIn } from '@/hooks/use-auth'
+import { Spinner } from '../ui/spinner'
 
 interface AuthFormProps {
   defaultTab?: 'signup' | 'signin'
 }
 
 export function AuthForm({ defaultTab = 'signup' }: AuthFormProps) {
+  const navigate = useNavigate()
   const [currentTab, setCurrentTab] = useState(defaultTab)
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
   const signUpMutation = useSignUp()
   const signInMutation = useSignIn()
-  // Update currentTab when defaultTab prop changes
-  useEffect(() => {
-    setCurrentTab(defaultTab)
-  }, [defaultTab])
 
   const signUpForm = useForm({
     defaultValues: {
@@ -59,9 +58,13 @@ export function AuthForm({ defaultTab = 'signup' }: AuthFormProps) {
   })
 
   const handleTabChange = (value: string) => {
-    const tabValue = value as 'signup' | 'signin'
-    setCurrentTab(tabValue)
-    setError(null) // Clear any existing errors when switching tabs
+    // Assuming you want to switch between /auth/signup and /auth/signin
+    // Adjust the 'to' path based on your actual route structure
+    navigate({
+      to: value === 'signup' ? '/auth/sign-up' : '/auth/sign-in',
+      // Or if using search params (e.g. /auth?mode=signin):
+      // search: { mode: value }
+    })
   }
 
   return (
@@ -207,9 +210,13 @@ export function AuthForm({ defaultTab = 'signup' }: AuthFormProps) {
                   disabled={!canSubmit || signUpMutation.isPending}
                   className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-3"
                 >
-                  {isSubmitting || signUpMutation.isPending
-                    ? 'Creating Account...'
-                    : 'Create Account'}
+                  {isSubmitting || signUpMutation.isPending ? (
+                    <>
+                      <Spinner className="w-5 h-5 mx-auto" />
+                    </>
+                  ) : (
+                    'Create Account'
+                  )}
                 </Button>
               )}
             </signUpForm.Subscribe>
@@ -326,9 +333,13 @@ export function AuthForm({ defaultTab = 'signup' }: AuthFormProps) {
                   disabled={!canSubmit || signInMutation.isPending}
                   className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-3"
                 >
-                  {isSubmitting || signInMutation.isPending
-                    ? 'Signing In...'
-                    : 'Sign In'}
+                  {isSubmitting || signInMutation.isPending ? (
+                    <>
+                      <Spinner className="w-5 h-5" /> 'Signing In'
+                    </>
+                  ) : (
+                    'Sign In'
+                  )}
                 </Button>
               )}
             </signInForm.Subscribe>

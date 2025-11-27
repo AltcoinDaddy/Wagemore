@@ -1,6 +1,4 @@
 import { createRootRouteWithContext, Outlet } from '@tanstack/react-router'
-import { ReactNode, useEffect, useState } from 'react'
-import { Toaster } from '@/components/ui/sonner'
 import { ThemeProvider } from 'next-themes'
 
 import type { QueryClient } from '@tanstack/react-query'
@@ -23,7 +21,6 @@ function RootComponent() {
         disableTransitionOnChange
       >
         <Outlet />
-        <Toaster />
       </ThemeProvider>
     </div>
   )

@@ -1,3 +1,5 @@
+'use client'
+
 import {
   CircleCheckIcon,
   InfoIcon,
@@ -5,38 +7,14 @@ import {
   OctagonXIcon,
   TriangleAlertIcon,
 } from 'lucide-react'
-import { useTheme } from 'next-themes'
-import { useEffect, useState } from 'react'
-import { Toaster as Sonner } from 'sonner'
-import type { ToasterProps } from 'sonner'
+
+import { Toaster as Sonner, type ToasterProps } from 'sonner'
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  const { theme = 'system' } = useTheme()
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  if (!mounted) {
-    return null
-  }
-
   return (
     <Sonner
-      theme={theme as ToasterProps['theme']}
+      theme="light"
       className="toaster group"
-      toastOptions={{
-        classNames: {
-          toast:
-            'group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg',
-          description: 'group-[.toast]:text-muted-foreground',
-          actionButton:
-            'group-[.toast]:bg-primary group-[.toast]:text-primary-foreground',
-          cancelButton:
-            'group-[.toast]:bg-muted group-[.toast]:text-muted-foreground',
-        },
-      }}
       icons={{
         success: <CircleCheckIcon className="size-4" />,
         info: <InfoIcon className="size-4" />,
@@ -44,10 +22,26 @@ const Toaster = ({ ...props }: ToasterProps) => {
         error: <OctagonXIcon className="size-4" />,
         loading: <Loader2Icon className="size-4 animate-spin" />,
       }}
-      position="bottom-right"
-      expand={true}
-      richColors={true}
-      closeButton={true}
+      style={
+        {
+          '--normal-bg': '#ffffff',
+          '--normal-text': '#000000',
+          '--normal-border': '#e5e5e5',
+          '--border-radius': '8px',
+          '--success-bg': '#ffffff',
+          '--success-border': '#22c55e',
+          '--success-text': '#000000',
+          '--error-bg': '#ffffff',
+          '--error-border': '#ef4444',
+          '--error-text': '#000000',
+          '--warning-bg': '#ffffff',
+          '--warning-border': '#f59e0b',
+          '--warning-text': '#000000',
+          '--info-bg': '#ffffff',
+          '--info-border': '#3b82f6',
+          '--info-text': '#000000',
+        } as React.CSSProperties
+      }
       {...props}
     />
   )

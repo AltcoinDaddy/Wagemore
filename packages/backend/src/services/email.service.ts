@@ -4,6 +4,7 @@ import { readFileSync, existsSync } from "fs";
 import { join, resolve } from "path";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
+import { Resend } from "resend";
 
 // Fix for ES modules - get __dirname equivalent
 const __filename = fileURLToPath(import.meta.url);
@@ -17,31 +18,14 @@ interface EmailConfig {
 }
 
 class EmailService {
-  private transporter: nodemailer.Transporter;
+  private resend: Resend;
   private emailVerificationTemplate: string = "";
   private passwordResetTemplate: string = "";
 
   constructor() {
-    // Validate that all required SMTP env vars are present
-    this.validateConfig();
-
-    // Load email templates
+    // No more SMTP validation needed!
+    this.resend = new Resend(env.RESEND_KEY);
     this.loadTemplates();
-
-    this.transporter = nodemailer.createTransport({
-      host: env.SMTP_HOST,
-      port: env.SMTP_PORT,
-      secure: env.SMTP_PORT === 465, // true for 465, false for other ports
-      auth: {
-        user: env.SMTP_USER,
-        pass: env.SMTP_PASSWORD,
-      },
-      // Optional: Add these for better reliability
-      pool: true,
-      maxConnections: 1,
-      rateDelta: 20000,
-      rateLimit: 5,
-    });
   }
 
   private validateConfig(): void {
@@ -276,29 +260,22 @@ class EmailService {
 
   async sendEmail(config: EmailConfig): Promise<void> {
     try {
-      const info = await this.transporter.sendMail(config);
-      console.log(
-        `✅ Email sent successfully to ${config.to}. Message ID: ${info.messageId}`,
-      );
-    } catch (error: any) {
-      console.error("❌ Email sending error:", error);
+      const { data, error } = await this.resend.emails.send({
+        from: "WageMore <onboarding@resend.dev>", // Must use this until you verify your domain
+        to: config.to,
+        subject: config.subject,
+        html: config.html,
+      });
 
-      // Provide more specific error messages
-      if (error.code === "EAUTH") {
-        throw new Error(
-          "SMTP authentication failed. Check your email credentials.",
-        );
-      } else if (error.code === "ECONNECTION") {
-        throw new Error(
-          "Failed to connect to SMTP server. Check your host and port.",
-        );
-      } else if (error.code === "ETIMEDOUT") {
-        throw new Error(
-          "SMTP connection timeout. Check your network connection.",
-        );
-      } else {
-        throw new Error(`Email sending failed: ${error.message}`);
+      if (error) {
+        console.error("❌ Resend Error:", error);
+        throw new Error(error.message);
       }
+
+      console.log(`✅ Email sent successfully via Resend. ID: ${data?.id}`);
+    } catch (error: any) {
+      console.error("❌ Email sending failed:", error);
+      // Don't kill the process, just log it
     }
   }
 
@@ -332,17 +309,17 @@ class EmailService {
     });
   }
 
-  // Test email connection
-  async testConnection(): Promise<boolean> {
-    try {
-      await this.transporter.verify();
-      console.log("✅ SMTP connection verified successfully");
-      return true;
-    } catch (error) {
-      console.error("❌ SMTP connection failed:", error);
-      return false;
-    }
-  }
+  // // Test email connection
+  // async testConnection(): Promise<boolean> {
+  //   try {
+  //     await this.transporter.verify();
+  //     console.log("✅ SMTP connection verified successfully");
+  //     return true;
+  //   } catch (error) {
+  //     console.error("❌ SMTP connection failed:", error);
+  //     return false;
+  //   }
+  // }
 
   private getEmailVerificationTemplate(name: string, otp: string): string {
     // Check if we have the HTML template loaded

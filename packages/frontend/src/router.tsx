@@ -5,6 +5,7 @@ import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen'
+import { Toaster } from './components/ui/sonner'
 
 // Create query client
 const queryClient = new QueryClient({
@@ -40,6 +41,7 @@ export function App() {
       <RouterProvider router={router} />
       <ReactQueryDevtools initialIsOpen={false} />
       <TanStackRouterDevtools router={router} />
+      <Toaster />
     </QueryClientProvider>
   )
 }

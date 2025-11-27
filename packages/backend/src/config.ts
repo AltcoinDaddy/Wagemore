@@ -28,6 +28,7 @@ const EnvSchema = z.object({
     .refine((email) => email.endsWith("@gmail.com"), "Must be a Gmail address"),
   SMTP_PASSWORD: z.string().min(16, "Gmail app password must be 16 characters"),
   SMTP_FROM: z.string().email("Invalid from email address"),
+  RESEND_KEY: z.string(),
 });
 
 export const processEnv = EnvSchema.parse(process.env);
@@ -43,4 +44,5 @@ export const env = {
   SMTP_USER: processEnv.SMTP_USER,
   SMTP_PASSWORD: processEnv.SMTP_PASSWORD,
   SMTP_FROM: processEnv.SMTP_FROM,
+  RESEND_KEY: processEnv.RESEND_KEY,
 } as const;
