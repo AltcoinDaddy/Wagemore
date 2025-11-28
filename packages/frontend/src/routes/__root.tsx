@@ -2,6 +2,7 @@ import { createRootRouteWithContext, Outlet } from '@tanstack/react-router'
 import { ThemeProvider } from 'next-themes'
 
 import type { QueryClient } from '@tanstack/react-query'
+import { SidebarProvider } from '@/components/ui/sidebar'
 
 export interface RouterContext {
   queryClient: QueryClient

@@ -147,7 +147,7 @@ export function useLogout() {
 
   return useMutation({
     mutationFn: async () => {
-      await authApi.logout()
+      await authApi.logout(authStorage.getRefreshToken() || '')
     },
     onMutate: async () => {
       // Cancel any outgoing refetches

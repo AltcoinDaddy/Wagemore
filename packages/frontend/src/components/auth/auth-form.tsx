@@ -89,13 +89,13 @@ export function AuthForm({ defaultTab = 'signup' }: AuthFormProps) {
         <TabsList className="grid grid-cols-2 mb-6 bg-slate-700/50 w-full">
           <TabsTrigger
             value="signup"
-            className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white"
+            className="data-[state=active]:bg-primary-100! data-[state=active]:text-white"
           >
             Sign Up
           </TabsTrigger>
           <TabsTrigger
             value="signin"
-            className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white"
+            className="data-[state=active]:bg-primary-100! data-[state=active]:text-white"
           >
             Sign In
           </TabsTrigger>
@@ -207,7 +207,7 @@ export function AuthForm({ defaultTab = 'signup' }: AuthFormProps) {
                 <Button
                   type="submit"
                   disabled={!canSubmit || signUpMutation.isPending}
-                  className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-3"
+                  className="w-full bg-primary-100 hover:bg-primary-100 text-white font-semibold py-3"
                 >
                   {isSubmitting || signUpMutation.isPending ? (
                     <>
@@ -317,7 +317,7 @@ export function AuthForm({ defaultTab = 'signup' }: AuthFormProps) {
             <div className="text-right">
               <Link
                 to="/auth/forgot-password"
-                className="text-sm text-cyan-400 hover:text-cyan-300"
+                className="text-sm text-white hover:underline"
               >
                 Forgot Password?
               </Link>
@@ -331,7 +331,7 @@ export function AuthForm({ defaultTab = 'signup' }: AuthFormProps) {
                 <Button
                   type="submit"
                   disabled={!canSubmit || signInMutation.isPending}
-                  className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-3"
+                  className="w-full bg-primary-100 hover:bg-primary-100 text-white font-semibold py-3"
                 >
                   {isSubmitting || signInMutation.isPending ? (
                     <>

@@ -2,8 +2,12 @@ import { Link } from '@tanstack/react-router'
 import { Grip } from 'lucide-react'
 import { Button } from '../ui/button'
 import { navigationItems } from '@/constants'
+import { useAuth } from '@/hooks/use-auth'
+import { Avatar } from '../ui/avatar'
 
 export const Header = () => {
+  const { user } = useAuth()
+
   return (
     <header className="sticky top-0 w-full sm:px-10 px-4 py-6 z-50">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -24,15 +28,25 @@ export const Header = () => {
 
         {/* Action Buttons */}
         <div className="flex items-center space-x-4">
-          <Button
-            className="text-normal font-medium hover:underline text-white"
-            variant="link"
-          >
-            <Link to="/auth/sign-in">Sign In</Link>
-          </Button>
-          <Button className="px-4 py-2 text-sm font-medium bg-primary-100 rounded-md hover:bg-gray-50">
-            <Link to="/auth/sign-up">Get Started</Link>
-          </Button>
+          {user ? (
+            <>
+              <Avatar className="w-12 h-12">
+                <img src={user.image || ''} alt={user.name || 'User Avatar'} />
+              </Avatar>
+            </>
+          ) : (
+            <>
+              <Button
+                className="text-normal font-medium hover:underline text-white"
+                variant="link"
+              >
+                <Link to="/auth/sign-in">Sign In</Link>
+              </Button>
+              <Button className="px-4 py-2 text-sm font-medium bg-primary-100 rounded-md hover:bg-primary-100 text-white">
+                <Link to="/auth/sign-up">Get Started</Link>
+              </Button>
+            </>
+          )}
         </div>
 
         {/* Mobile Menu Button */}

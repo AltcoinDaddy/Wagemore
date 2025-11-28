@@ -1,5 +1,6 @@
-import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
+import { DashboardLayout } from '@/components/dashboard/_dashboard'
 import { authStorage } from '@/lib/auth-storage'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_auth')({
   beforeLoad: async ({ location }) => {
@@ -23,9 +24,5 @@ export const Route = createFileRoute('/_auth')({
       })
     }
   },
-  component: ProtectedLayout,
+  component: DashboardLayout,
 })
-
-function ProtectedLayout() {
-  return <Outlet />
-}
